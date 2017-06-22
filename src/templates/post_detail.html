@@ -7,6 +7,8 @@
     <img src='{{ instance.image.url }}' class="img-responsive" />
     {% endif %}
     {{ instance.content|truncatechars:15|urlify }}
+    <p><div class="fb-like" data-href="https://developers.facebook.com/docs/plugins/" data-layout="standard" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div></p>
+    <p>
     <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri}}">
     Facebook
     </a>
@@ -23,11 +25,13 @@
     </a>
 
     <a href="http://www.reddit.com/submit?url={{ request.build_absolute_uri}}&title={{ instance.title }}">Reddit</a>
-    <h1>{{ instance.title }}<small>{{ instance.timestamp }}</small></h1>
+    </p>
+    <h1>{{ instance.title }}<small>{% if instance.draft %}<span style="color:red;">draft</span>{% endif %}{{ instance.timestamp }}</small></h1>
     {% if instance.user.get_full_name %}
     <p> Author: {{ instance.user.get_full_name }}</p>
     {% endif %}
     {{ instance.content | linebreaks}}<br />
+    <div class="fb-comments" data-href="{{ request.build_absolute_uri}}" data-numposts="5"></div>
 </div>
 
 {% endblock %}
