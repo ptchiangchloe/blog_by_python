@@ -44,7 +44,7 @@ def post_detail(request, id=None):
     # instance = Post.objects.get(id=1)
     instance = get_object_or_404(Post, id=id)
     if instance.draft or instance.publish > timezone.now().date():
-        if not require.user.is_staff or not requset.user.is_superuser:
+        if not request.user.is_staff or not request.user.is_superuser:
             raise Http404
     share_string = quote_plus(instance.content)
     context = {
