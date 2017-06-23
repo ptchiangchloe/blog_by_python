@@ -3,8 +3,10 @@ from __future__ import unicode_literals
 
 from urllib import quote_plus
 from django.contrib import messages
+from django.db.models import Q
 from django.http import HttpResponse,HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 
 from .forms import PostForm
 from .models import Post
@@ -12,6 +14,9 @@ from .models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
+
+#Post.object.all()
+
 
 def post_create(request):
     if not request.user.is_staff or not request.user.is_superuser:
@@ -38,6 +43,9 @@ def post_create(request):
 def post_detail(request, id=None):
     # instance = Post.objects.get(id=1)
     instance = get_object_or_404(Post, id=id)
+    if instance.draft or instance.publish > timezone.now().date():
+        if not require.user.is_staff or not requset.user.is_superuser:
+            raise Http404
     share_string = quote_plus(instance.content)
     context = {
         "title": instance.title,
@@ -47,10 +55,20 @@ def post_detail(request, id=None):
     return render(request, 'post_detail.html', context)
 
 def post_list(request):
-    queryset_list = Post.objects.all().order_by("-timestamp")
-    paginator = Paginator(queryset_list, 5) # Show 25 contacts per page
+    queryset_list = Post.object.active().order_by("-timestamp")
+    if request.user.is_staff or request.user.is_superuser:
+        queryset_list = Post.object.all()
 
-    page = request.GET.get('abc')
+    query = request.GET.get("q")
+    if query: queryset_list = queryset_list.filter(
+        Q(title__icontains=query) |
+        Q(content__icontains=query) |
+        Q(user__username__icontains=query)
+        )
+
+    paginator = Paginator(queryset_list, 5) # Show 25 contacts per page
+    page_request_var = "page"
+    page = request.GET.get(page_request_var)
     try:
         queryset = paginator.page(page)
     except PageNotAnInteger:
